@@ -2,7 +2,9 @@ const express = require('express')
 const router = express.Router()
 const multer = require('multer')
 const path = require('path')
-const fs = require('node:fs')
+//const fs = require('node:fs')
+const fs = require('fs')
+
 
 
 const Book = require('../models/book')
@@ -24,11 +26,19 @@ router.get('/', async (req,res) =>{
     if (req.query.title != null && req.query.title != ''){
         query = query.regex('title', new RegExp(req.query.title, 'i'))
     }
+    if (req.query.publishedBefore != null && req.query.publishedBefore != ''){
+        query = query.lte('publishDate', req.query.publishedBefore)
+    }
+    if (req.query.publishedBefore != null && req.query.publishedBefore != ''){
+        query = query.gte('publishDate', req.query.publishedAfter)
+    }
     try{
-        const books = await Book.find({})
-        res.render('books/index',{
+        const books = await query.exec()
+        res.render('books/index',
+        {
             books: books,
-            searchOptions: req.query})
+            searchOptions: req.query
+        })
     } catch{
             res.redirect('/')
     }
@@ -43,7 +53,7 @@ router.get('/new', async (req,res)=> {
 //create books route
 
 router.post('/', upload.single('cover'), async (req,res) => {
-    const fileName = req.file != null ? req.file.fileName : null
+    const fileName = req.file != null ? req.file.filename : null
     const book = new Book({
         title: req.body.title,
         author: req.body.author,
@@ -61,21 +71,25 @@ router.post('/', upload.single('cover'), async (req,res) => {
         if(book.coverImageName != null){
             removeBookCover(book.coverImageName)
             }
-
-        renderNewPage(res, book, true)
+            renderNewPage(res, book, true)
     }
 
  
     })  
 
     function removeBookCover(fileName) {
-    try {
-        fs.unlink(path.join(uploadPath, fileName));
-        console.log(`File ${fileName} removed successfully.`);
-    } catch (err) {
-        console.error(`Error removing file ${fileName}:`, err.message);
-    }
-    }
+        fs.unlink(path.join(uploadPath, fileName), err => {
+          if (err) console.error(err)
+        })
+      }
+    // function removeBookCover(fileName) {
+    // try {
+    //     fs.unlink(path.join(uploadPath, fileName));
+    //     console.log(`File ${fileName} removed successfully.`);
+    // } catch (err) {
+    //     console.error(`Error removing file ${fileName}:`, err.message);
+    // }
+    // }
     
     async function renderNewPage(res, book, hasError = false){
         try{
@@ -84,9 +98,10 @@ router.post('/', upload.single('cover'), async (req,res) => {
                 authors: authors,
                 book: book
             }
+            if(hasError) {params.errorMessage = 'Error adding Book'}
+
             res.render('books/new', params)
            }catch{
-            if(hasError) {params.errorMessage = 'Error adding Book'}
             res.redirect('/books')
            }
     }
