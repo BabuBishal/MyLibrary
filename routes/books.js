@@ -50,9 +50,11 @@ router.post('/', async (req,res) => {
 
     try{
         const newBook  = await book.save()
+        console.log('hi')
         //res.redirect(`books/${newBook.id}`)
         res.redirect(`books`)
     } catch{
+        console.log('hello')
         renderNewPage(res, book, true)
     }
 
