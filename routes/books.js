@@ -13,7 +13,7 @@ const imageMimeType = ['image/jpeg', 'image/png', 'image/gif']
 const upload = multer({
     dest: uploadPath,
     fileFilter: (req, file, callback) => {
-        callback(null, imageMimeType.includes(file.Mimetype))
+        callback(null, imageMimeType.includes(file.mimetype))
     }
 })
 
