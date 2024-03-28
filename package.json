@@ -16,6 +16,7 @@
     "express": "^4.18.2",
     "express-ejs-layouts": "^2.5.1",
     "fs.promises": "^0.1.2",
+    "method-override": "^3.0.0",
     "mongoose": "^8.1.0"
   },
   "devDependencies": {
